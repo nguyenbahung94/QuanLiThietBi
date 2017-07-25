@@ -20,22 +20,31 @@
         android:textSize="20sp" />
 
     <TextView
-        android:visibility="gone"
         android:id="@+id/tvDialogthongbao"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Số Lượng"
         android:textColor="#e90f0f"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:visibility="gone" />
 
     <EditText
-        android:inputType="number"
         android:id="@+id/edtDialogSoluong"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:hint="số lượng"
+        android:inputType="number"
+        android:textSize="20sp" />
+
+    <EditText
+        android:inputType="number"
+        android:hint="số ngày mượn"
+        android:id="@+id/edtsongaymuon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
         android:textSize="20sp" />
 
     <Button
@@ -43,6 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginTop="10dp"
         android:text="OK"
         android:textSize="20sp" />
 </LinearLayout>

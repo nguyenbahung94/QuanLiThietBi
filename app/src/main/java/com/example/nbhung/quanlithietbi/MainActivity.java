@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                         if (edtName.getText().toString().equals(listUser.get(i).getName())) {
                             if (edtPassWord.getText().toString().equals(listUser.get(i).getPass())) {
                                 Toast.makeText(getApplicationContext(), "Login " + listUser.get(i).getName() + "success", Toast.LENGTH_SHORT).show();
-                                startActivityUser();
+                                startActivityUser(listUser.get(i).getId());
                                 return;
                             }
                         } else {
@@ -52,8 +52,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void startActivityUser() {
+    public void startActivityUser(int iduser) {
         Intent i = new Intent(MainActivity.this, ActivityUser.class);
+        i.putExtra("iduser",iduser);
         startActivity(i);
     }
 
@@ -63,14 +64,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData() {
+
         dbManager = new DBManager(this);
         listUser = dbManager.getListUser();
-//        if (dbManager.insert(dbManager.TABLE_USER, new String[]{"id", "name", "pass"}, new String[]{String.valueOf(listUser.size() + 1), "hung3", "123"})) {
-//            Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
-//        }
-//        if (dbManager.delete(DBManager.TABLE_USER, "id=?", new String[]{"4"})) {
-//            Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
-//        }
         dbManager.update(DBManager.TABLE_USER, new String[]{"id", "name", "pass"}, new String[]{"2", "hung22", "1234"}, "id=?", new String[]{"2"});
         listUser = dbManager.getListUser();
         for (int i = 0; i < listUser.size(); i++) {
