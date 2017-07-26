@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        listUser = new ArrayList<>();
         edtName = (EditText) findViewById(R.id.edtNameUser);
         edtPassWord = (EditText) findViewById(R.id.edtpassWord);
         btnLogin = (Button) findViewById(R.id.btnDangNhap);
@@ -41,8 +42,6 @@ public class MainActivity extends AppCompatActivity {
                                 startActivityUser(listUser.get(i).getId());
                                 return;
                             }
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Login Failed", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -52,9 +51,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initData();
+    }
+
     public void startActivityUser(int iduser) {
         Intent i = new Intent(MainActivity.this, ActivityUser.class);
-        i.putExtra("iduser",iduser);
+        i.putExtra("iduser", iduser);
         startActivity(i);
     }
 
@@ -64,14 +69,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData() {
-
+        listUser.clear();
         dbManager = new DBManager(this);
-        listUser = dbManager.getListUser();
-        dbManager.update(DBManager.TABLE_USER, new String[]{"id", "name", "pass"}, new String[]{"2", "hung22", "1234"}, "id=?", new String[]{"2"});
+        listUser.addAll(dbManager.getListUser());
+//        dbManager.update(DBManager.TABLE_USER, new String[]{"id", "name", "pass"}, new String[]{"2", "hung22", "1234"}, "id=?", new String[]{"2"});
         listUser = dbManager.getListUser();
         for (int i = 0; i < listUser.size(); i++) {
             Log.e("list user", listUser.get(i).toString());
         }
+//        if (dbManager.update(DBManager.TABLE_KHO, new String[]{"id", "matb", "soluong"}, new String[]{"3", "3","10"}, "id=?", new String[]{"3"}))
+//            Log.e("thanhcong", "thanh cong");
 
     }
 

@@ -15,6 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.nbhung.quanlithietbi.Model.CustomAdapter;
+import com.example.nbhung.quanlithietbi.Model.CustomAdapterMuon;
+import com.example.nbhung.quanlithietbi.Model.DoiTuongMuon;
 import com.example.nbhung.quanlithietbi.Model.chitiet;
 import com.example.nbhung.quanlithietbi.Model.kho;
 import com.example.nbhung.quanlithietbi.Model.loaitb;
@@ -34,11 +36,14 @@ public class ActivityUser extends AppCompatActivity {
     private ArrayList<kho> listKho;
     private ArrayList<muon> listMuon;
     private ArrayList<chitiet> listChiTiet;
-    private ListView mListView;
+    private ArrayList<DoiTuongMuon> muonArrayList;
+    private ListView mListView, mListViewMuon;
     private CustomAdapter customAdapter;
+    private CustomAdapterMuon customAdapterMuon;
     private Dialog mDialog;
     private int mYear, mMonth, mDay;
     private int IdUser;
+    private Button btnMuon, btnTra;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,18 +55,41 @@ public class ActivityUser extends AppCompatActivity {
         listKho = new ArrayList<>();
         listMuon = new ArrayList<>();
         listChiTiet = new ArrayList<>();
+        muonArrayList = new ArrayList<>();
         initData();
         mListView = (ListView) findViewById(R.id.lvthietbi);
+        mListViewMuon = (ListView) findViewById(R.id.lvThietBiTra);
+        customAdapterMuon = new CustomAdapterMuon(this, muonArrayList);
+        mListViewMuon.setAdapter(customAdapterMuon);
         customAdapter = new CustomAdapter(getApplicationContext(), listLoai);
         mListView.setAdapter(customAdapter);
+        btnMuon = (Button) findViewById(R.id.btnUserMuon);
+        btnTra = (Button) findViewById(R.id.btnUserTra);
+        btnMuon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListView.setVisibility(View.VISIBLE);
+                mListViewMuon.setVisibility(View.GONE);
+            }
+        });
+        btnTra.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListView.setVisibility(View.GONE);
+                mListViewMuon.setVisibility(View.VISIBLE);
+            }
+        });
         event();
+        eventListMuon();
 
     }
 
     private void initData() {
         listLoai.clear();
         listKho.clear();
-
+        listMuon.clear();
+        listChiTiet.clear();
+        muonArrayList.clear();
         dbManager = new DBManager(this);
         listLoai.addAll(dbManager.getListLoai());
         listKho.addAll(dbManager.getListKho());
@@ -74,6 +102,13 @@ public class ActivityUser extends AppCompatActivity {
         }
         for (chitiet ss : listChiTiet) {
             Log.e("chitiet", ss.toString());
+        }
+        muonArrayList.addAll(dbManager.getMuonForUser(IdUser));
+        for (DoiTuongMuon ss : muonArrayList) {
+            dbManager.getChiTietMaMuon(ss);
+        }
+        for (DoiTuongMuon ss : muonArrayList) {
+            Log.e("doi tuong muon:", ss.toString());
         }
         addSoluong();
 
@@ -122,33 +157,39 @@ public class ActivityUser extends AppCompatActivity {
                                     tvThongBao.setText("số Lượng Phải < " + loaitbTam.getSoluong());
                                     tvThongBao.setVisibility(View.VISIBLE);
                                 } else {
-                                    Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
-                                    int matbs = loaitbTam.getMatb();
-                                    tvThongBao.setVisibility(View.GONE);
-                                    if (dbManager.update(DBManager.TABLE_KHO, new String[]{"id", "matb", "soluong"}, new String[]{String.valueOf(matbs), String.valueOf(matbs), String.valueOf(loaitbTam.getSoluong() - Integer.parseInt(edtDialog.getText().toString()))}, "id=?", new String[]{String.valueOf(loaitbTam.getMatb())}))
-                                        Log.e("thanhcong", "thanh cong");
-                                    mDialog.dismiss();
-                                    customAdapter.notifyDataSetChanged();
-                                    long daynow = System.currentTimeMillis();
-                                    long day = TimeUnit.DAYS.toMillis(Long.parseLong(edtsSonNgayMuon.getText().toString()));
-                                    daynow = daynow + day;
-                                    Calendar c = Calendar.getInstance();
-                                    String homnay = c.get(Calendar.YEAR) + "/" + c.get(Calendar.MONTH) + "/" + c.get(Calendar.DATE);
-                                    Log.e("hom nay", homnay);
-                                    c.setTimeInMillis(daynow);
-                                    mYear = c.get(Calendar.YEAR);
-                                    mMonth = c.get(Calendar.MONTH);
-                                    mDay = c.get(Calendar.DATE);
+                                    if (edtsSonNgayMuon.getText().toString().equals("")) {
+                                        tvThongBao.setText("ngay muon khong dk null");
+                                        tvThongBao.setVisibility(View.VISIBLE);
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_SHORT).show();
+                                        int matbs = loaitbTam.getMatb();
+                                        tvThongBao.setVisibility(View.GONE);
+                                        if (dbManager.update(DBManager.TABLE_KHO, new String[]{"id", "matb", "soluong"}, new String[]{String.valueOf(matbs), String.valueOf(matbs), String.valueOf(loaitbTam.getSoluong() - Integer.parseInt(edtDialog.getText().toString()))}, "id=?", new String[]{String.valueOf(loaitbTam.getMatb())}))
+                                            Log.e("thanhcong", "thanh cong");
 
-                                    String ngaytra = mYear + "/" + mMonth + "/" + mDay;
-                                    Log.e("ngay tra", String.valueOf(mYear + "/" + mMonth + "/" + mDay));
-                                    if (dbManager.insert(dbManager.TABLE_MUON, new String[]{"id", "iduser", "ngaymuon", "ngaytra"}, new String[]{String.valueOf(listMuon.size() + 1), String.valueOf(IdUser), homnay, ngaytra})) {
-                                        Log.e("thanhcong", "thanh cong");
+                                        long daynow = System.currentTimeMillis();
+                                        long day = TimeUnit.DAYS.toMillis(Long.parseLong(edtsSonNgayMuon.getText().toString()));
+                                        daynow = daynow + day;
+                                        Calendar c = Calendar.getInstance();
+                                        String homnay = c.get(Calendar.YEAR) + "/" + c.get(Calendar.MONTH) + "/" + c.get(Calendar.DATE);
+                                        Log.e("hom nay", homnay);
+                                        c.setTimeInMillis(daynow);
+                                        mYear = c.get(Calendar.YEAR);
+                                        mMonth = c.get(Calendar.MONTH);
+                                        mDay = c.get(Calendar.DATE);
+                                        String ngaytra = mYear + "/" + mMonth + "/" + mDay;
+                                        Log.e("ngay tra", String.valueOf(mYear + "/" + mMonth + "/" + mDay));
+                                        if (dbManager.insert(DBManager.TABLE_MUON, new String[]{"id", "iduser", "ngaymuon", "ngaytra"}, new String[]{String.valueOf(listMuon.size() + 1), String.valueOf(IdUser), homnay, ngaytra})) {
+                                            Log.e("thanhcong", "thanh cong");
+                                        }
+                                        if (dbManager.insert(DBManager.TABLE_CHITIET, new String[]{"id", "mamuon", "soluong", "matb"}, new String[]{String.valueOf(listChiTiet.size() + 1), String.valueOf(listMuon.size() + 1), String.valueOf(edtDialog.getText()), String.valueOf(loaitbTam.getMatb())})) {
+                                            Log.e("thanhcong", "thanh cong");
+                                        }
+                                        mDialog.dismiss();
+                                        initData();
+                                        customAdapter.notifyDataSetChanged();
                                     }
-                                    if (dbManager.insert(dbManager.TABLE_CHITIET, new String[]{"id", "mamuon", "soluong", "matb"}, new String[]{String.valueOf(listChiTiet.size() + 1), String.valueOf(listMuon.size()+1), String.valueOf(edtDialog.getText()), String.valueOf(loaitbTam.getMatb())})) {
-                                        Log.e("thanhcong", "thanh cong");
-                                    }
-                                    initData();
+
                                 }
                             } else {
                                 tvThongBao.setText("cant be null");
@@ -162,6 +203,67 @@ public class ActivityUser extends AppCompatActivity {
                 }
 
 
+            }
+        });
+    }
+
+    public void eventListMuon() {
+        mListViewMuon.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final DoiTuongMuon doituongSelect = muonArrayList.get(i);
+                mDialog = new Dialog(ActivityUser.this);
+                mDialog.setContentView(R.layout.show_dialogtra);
+                mDialog.setTitle("Trả");
+                final TextView tvtenthietbi = (TextView) mDialog.findViewById(R.id.tvtendialogtra);
+                final EditText edtsoluong = (EditText) mDialog.findViewById(R.id.edtdialogsoluongtra);
+                final TextView tvthongbao = (TextView) mDialog.findViewById(R.id.tvthongbaotra);
+                tvtenthietbi.setText(doituongSelect.getTentb());
+                Button btnOk = (Button) mDialog.findViewById(R.id.btndialogtra);
+                btnOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!edtsoluong.getText().toString().equals("")) {
+                            if (Integer.parseInt(edtsoluong.getText().toString()) <= doituongSelect.getSoluong()) {
+                                int kq = doituongSelect.getSoluong() - Integer.parseInt(edtsoluong.getText().toString());
+                                if (kq == 0) {
+                                    if (dbManager.delete(DBManager.TABLE_MUON, "id=?", new String[]{String.valueOf(doituongSelect.getIdmuon())})) {
+                                        Toast.makeText(getApplicationContext(), "Xong", Toast.LENGTH_SHORT).show();
+                                    }
+                                    if (dbManager.delete(DBManager.TABLE_CHITIET, "mamuon=?", new String[]{String.valueOf(doituongSelect.getIdmuon())})) {
+                                        Toast.makeText(getApplicationContext(), "Xong", Toast.LENGTH_SHORT).show();
+                                    }
+                                    mDialog.dismiss();
+                                    initData();
+                                    customAdapter.notifyDataSetChanged();
+
+                                } else {
+                                    if (dbManager.update(DBManager.TABLE_CHITIET, new String[]{"id", "mamuon", "soluong", "matb"}
+                                            , new String[]{String.valueOf(doituongSelect.getIdchitiet())
+                                                    , String.valueOf(doituongSelect.getIdmuon())
+                                                    , String.valueOf(doituongSelect.getSoluong() - Integer.parseInt(edtsoluong.getText().toString()))
+                                                    , String.valueOf(doituongSelect.getMatb())}
+                                            , "mamuon=?"
+                                            , new String[]{String.valueOf(doituongSelect.getIdmuon())})) {
+                                        Log.e("", "Thành công");
+                                        mDialog.dismiss();
+                                        initData();
+                                        customAdapterMuon.notifyDataSetChanged();
+                                        Toast.makeText(getApplicationContext(), "xong", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            } else {
+                                tvthongbao.setText("số lượng phải<=" + doituongSelect.getSoluong());
+                                tvthongbao.setVisibility(View.VISIBLE);
+                            }
+
+                        } else {
+                            tvthongbao.setText("cant be null");
+                            tvthongbao.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+                mDialog.show();
             }
         });
     }

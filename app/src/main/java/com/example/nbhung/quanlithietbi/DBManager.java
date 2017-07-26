@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.nbhung.quanlithietbi.Model.DoiTuongMuon;
 import com.example.nbhung.quanlithietbi.Model.chitiet;
 import com.example.nbhung.quanlithietbi.Model.kho;
 import com.example.nbhung.quanlithietbi.Model.loaitb;
@@ -235,6 +236,73 @@ public class DBManager {
         long result = mSqLiteDatabase.update(tableName, values, whereClause, whereArgs);
         closeDb();
         return result > 0;
+    }
+
+    public ArrayList<DoiTuongMuon> getMuonForUser(int id) {
+        openDB();
+        Cursor c = mSqLiteDatabase.rawQuery("SELECT * FROM muon WHERE iduser=?", new String[]{String.valueOf(id)});
+        if (c == null) {
+            return null;
+        }
+        int intid = c.getColumnIndex("id");
+        int intuser = c.getColumnIndex("iduser");
+        int intngaymuon = c.getColumnIndex("ngaymuon");
+        int intngaytra = c.getColumnIndex("ngaytra");
+        int idmuon, user;
+        String ngaytra, ngaymuon;
+        ArrayList<DoiTuongMuon> muonArrayList = new ArrayList<>();
+        c.moveToFirst();
+        while (!c.isAfterLast()) {
+            idmuon = c.getInt(intid);
+            user = c.getInt(intuser);
+            ngaymuon = c.getString(intngaymuon);
+            ngaytra = c.getString(intngaytra);
+            DoiTuongMuon tam = new DoiTuongMuon();
+            tam.setIdmuon(idmuon);
+            tam.setIduser(user);
+            tam.setNgaymuon(ngaymuon);
+            tam.setNgaytra(ngaytra);
+            muonArrayList.add(tam);
+            c.moveToNext();
+        }
+        c.close();
+
+
+        closeDb();
+        return muonArrayList;
+    }
+
+    public DoiTuongMuon getChiTietMaMuon(DoiTuongMuon doiTuongMuon) {
+        openDB();
+        Cursor c = mSqLiteDatabase.rawQuery("SELECT * FROM chitiet where mamuon=?", new String[]{String.valueOf(doiTuongMuon.getIdmuon())});
+        if (c == null) {
+            return null;
+        }
+        int intid = c.getColumnIndex("id");
+        int intmamuon = c.getColumnIndex("mamuon");
+        int intsoluong = c.getColumnIndex("soluong");
+        int intmatb = c.getColumnIndex("matb");
+        int id, mamuon, soluong, matb;
+        c.moveToFirst();
+        id = c.getInt(intid);
+        mamuon = c.getInt(intmamuon);
+        matb = c.getInt(intmatb);
+        soluong = c.getInt(intsoluong);
+        doiTuongMuon.setMatb(matb);
+        doiTuongMuon.setIdchitiet(id);
+        if (matb == 1) {
+            doiTuongMuon.setTentb("chuot");
+        }
+        if (matb == 2) {
+            doiTuongMuon.setTentb("banphim");
+        }
+        if (matb == 3) {
+            doiTuongMuon.setTentb("manhinh");
+        }
+        doiTuongMuon.setSoluong(soluong);
+
+        closeDb();
+        return doiTuongMuon;
     }
 
 
