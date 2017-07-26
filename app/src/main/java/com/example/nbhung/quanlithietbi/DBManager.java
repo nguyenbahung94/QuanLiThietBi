@@ -6,8 +6,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.example.nbhung.quanlithietbi.Model.chitiet;
 import com.example.nbhung.quanlithietbi.Model.kho;
 import com.example.nbhung.quanlithietbi.Model.loaitb;
+import com.example.nbhung.quanlithietbi.Model.muon;
 import com.example.nbhung.quanlithietbi.Model.user;
 
 import java.io.File;
@@ -23,11 +25,15 @@ import java.util.ArrayList;
 public class DBManager {
     public static final String TABLE_USER = "user";
     public static final String TABLE_KHO = "kho";
+    public static final String TABLE_MUON = "muon";
+    public static final String TABLE_CHITIET = "chitiet";
     private static final String DB_PATH = "/data/data/com.example.nbhung.quanlithietbi/databases";
     private static final String DB_NAME = "quanly.sqlite";
     private static final String SQL_QUERRY = "SELECT * FROM " + TABLE_USER;
     private static final String SQL_SQUERRY_LOAI = "SELECT *FROM loaitb";
     private static final String SQL_SQUERRY_KHO = "SELECT *FROM kho";
+    private static final String SQL_SQUERRY_MUON = "SELECT *FROM muon";
+    private static final String SQL_SQUERRY_CHITIET = "SELECT *FROM chitiet";
     private Context mContext;
     private SQLiteDatabase mSqLiteDatabase;
 
@@ -146,12 +152,67 @@ public class DBManager {
         return khoArrayList;
     }
 
+    public ArrayList<muon> getListMuon() {
+        openDB();
+        Cursor c = mSqLiteDatabase.rawQuery(SQL_SQUERRY_MUON, null);
+        if (c == null) {
+            return null;
+        }
+        int intid = c.getColumnIndex("id");
+        int intuser = c.getColumnIndex("iduser");
+        int intngaymuon = c.getColumnIndex("ngaymuon");
+        int intngaytra = c.getColumnIndex("ngaytra");
+        int id, iduser;
+        String ngaymuon, ngaytra;
+        c.moveToFirst();
+        ArrayList<muon> muonArrayList = new ArrayList<>();
+        while (!c.isAfterLast()) {
+            id = c.getInt(intid);
+            iduser = c.getInt(intuser);
+            ngaymuon = c.getString(intngaymuon);
+            ngaytra = c.getString(intngaytra);
+            muonArrayList.add(new muon(id, iduser, ngaymuon, ngaytra));
+            c.moveToNext();
+        }
+        c.close();
+        closeDb();
+        return muonArrayList;
+    }
+
+    public ArrayList<chitiet> getListChiTiet() {
+        openDB();
+        Cursor c = mSqLiteDatabase.rawQuery(SQL_SQUERRY_CHITIET, null);
+        if (c == null) {
+            return null;
+        }
+        int intid = c.getColumnIndex("id");
+        int intmamuon = c.getColumnIndex("mamuon");
+        int intsoluong = c.getColumnIndex("soluong");
+        int intmatb = c.getColumnIndex("matb");
+        int id, mamuon, soluong, matb;
+        c.moveToFirst();
+        ArrayList<chitiet> chitietArrayList = new ArrayList<>();
+        while (!c.isAfterLast()) {
+            id = c.getInt(intid);
+            mamuon = c.getInt(intmamuon);
+            soluong = c.getInt(intsoluong);
+            matb = c.getInt(intmatb);
+            chitietArrayList.add(new chitiet(id, mamuon, soluong, matb));
+            c.moveToNext();
+        }
+        c.close();
+
+        closeDb();
+        return chitietArrayList;
+    }
+
     public boolean insert(String tablename, String[] colums, String[] dataColums) {
         openDB();
         ContentValues values = new ContentValues();
-        values.put(colums[0], dataColums[0]);
-        values.put(colums[1], dataColums[1]);
-        values.put(colums[2], dataColums[2]);
+        for (int i = 0; i < colums.length; i++) {
+            values.put(colums[i], dataColums[i]);
+        }
+
         long resutl = mSqLiteDatabase.insert(tablename, null, values);
         closeDb();
         return resutl > -1;
@@ -175,15 +236,6 @@ public class DBManager {
         closeDb();
         return result > 0;
     }
-//    public boolean updateKho(String tableName,String[] colums,String[] dataColums,String whereClause,String[]whereArgs){
-//        openDB();
-//        ContentValues values = new ContentValues();
-//        for (int i = 0; i < colums.length; i++) {
-//            values.put(colums[i], dataColums[i]);
-//        }
-//        long result = mSqLiteDatabase.update(tableName, values, whereClause, whereArgs);
-//        closeDb();
-//        return result > 0;
-//    }
+
 
 }
